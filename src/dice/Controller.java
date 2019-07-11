@@ -101,6 +101,7 @@ public class Controller {
         txtResults.appendText("\n\nStarting a new roll! Let's go!");
         ObservableList<Node> boxes = gridSides.getChildren();
         int sum = 0;
+        int countDice = 0;
         for (Node box : boxes) {
             ObservableList<Node> nodes = ((HBox)box).getChildren();
             String name = "";
@@ -110,6 +111,7 @@ public class Controller {
                 } else if (node instanceof ComboBox) {
                     ComboBox cbo = (ComboBox)node;
                     int sides = Integer.parseInt(cbo.getSelectionModel().getSelectedItem().toString());
+                    countDice++;
                     Die die = new Die(sides);
                     int value = die.roll();
                     sum += value;
@@ -119,7 +121,14 @@ public class Controller {
                 }
             }
         }
-        txtResults.appendText("\nSum for this roll is: " + sum + ".");
+        if (countDice > 1) {
+            txtResults.appendText("\nSum for this roll is: " + sum + ".");
+        }
+        int modifier = validateModifier();
+        if (modifier != 0) {
+            sum += modifier;
+            txtResults.appendText("\nWith modifier, sum for this roll is: " + sum + ".");
+        }
     }
 
     @FXML
@@ -143,8 +152,13 @@ public class Controller {
     }
 
     @FXML
-    private void validateModifier() {
-        txtModifier.getText();
+    private int validateModifier() {
+        try {
+            int modifier = Integer.parseInt(txtModifier.getText());
+            return modifier;
+        } catch(Exception ex) {
+            return 0;
+        }
     }
 
 }

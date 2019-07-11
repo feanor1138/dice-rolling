@@ -21,7 +21,7 @@
         </HBox>
     </GridPane>
     <CheckBox fx:id="chkSame" onAction="#updateSame">They should all have the same number as #1</CheckBox>
-    <HBox>
+    <HBox alignment="center">
         <Label>Modifier (e.g. +1):</Label>
         <TextField fx:id="txtModifier" onAction="#validateModifier">0</TextField>
     </HBox>
