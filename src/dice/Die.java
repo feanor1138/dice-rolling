@@ -5,8 +5,15 @@ import java.util.Random;
 public class Die {
     private int sides;
     private int value;
-    public Die(int sides) {
+    private String name;
+
+    public Die(String name, int sides) {
+        this.name = name;
         this.sides = sides;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public int roll() {

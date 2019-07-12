@@ -1,14 +1,22 @@
 package dice;
 
+import javafx.animation.RotateTransition;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Point3D;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Box;
+import javafx.util.Duration;
+
+import java.util.LinkedList;
 
 public class Controller {
     @FXML
@@ -31,17 +39,25 @@ public class Controller {
     private CheckBox chkSame;
 
     @FXML
+    private CheckBox chkAnimate;
+
+    @FXML
     private TextField txtModifier;
 
     @FXML
-    private GridPaneFixedCols gridDice;
+    private GridPaneFixedCols diceTray;
 
     @FXML
     private CheckBox chkConsole;
 
+    private LinkedList<Die> diceToRoll = new LinkedList<Die>();
+
     private int maxDice = 8;
     private int maxSides = 100;
     private int defaultVal = 5;
+    private int rollSum = 0;
+    private int numDiceRolling = 0;
+    private boolean doAnimations = true;
 
     public Controller() {
     }
@@ -50,7 +66,7 @@ public class Controller {
     private void initialize() {
         //set up the grids
         gridSides.setCurrentCol(1);
-        gridDice.setMaxCols(9);
+        diceTray.setMaxCols(9);
         gridSides.setMaxCols(4);
         //set up the combo boxes
         addNumberOptions(cboNumDice, maxDice, 0);
@@ -109,52 +125,67 @@ public class Controller {
     @FXML
     private void rollDice() {
         //reset the dice tray
-        gridDice.clear();
+        diceTray.clear();
+        rollSum = 0;
 
         txtResults.appendText("\n\nStarting a new roll! Let's go!");
         ObservableList<Node> boxes = gridSides.getChildren();
-        int sum = 0;
-        int countDice = 0;
+        numDiceRolling = boxes.size();
         for (Node box : boxes) {
             ObservableList<Node> nodes = ((HBox)box).getChildren();
             String name = "";
             for (Node node : nodes) {
                 if (node instanceof Label) {
-                    name = ((Label)node).getText();
+                    name = ((Label)node).getText().replaceAll(":", "");
                 } else if (node instanceof ComboBox) {
                     ComboBox cbo = (ComboBox)node;
                     int sides = Integer.parseInt(cbo.getSelectionModel().getSelectedItem().toString());
-                    countDice++;
-                    Die die = new Die(sides);
-                    int value = die.roll();
-                    if (countDice > 1) {
-                        createDieLabel("+", BorderType.NONE);
-                    }
-                    createDieLabel(String.valueOf(value), BorderType.SINGLE);
-                    sum += value;
-
-                    //display result
-                    txtResults.appendText("\nRolling " + name + " " + value);
+                    diceToRoll.add(new Die(name, sides));
                 }
             }
         }
-        if (countDice > 1) {
-            txtResults.appendText("\nSum for this roll is: " + sum + ".");
-        }
-        int modifier = validateModifier();
-        if (modifier != 0) {
-            sum += modifier;
-            txtResults.appendText("\nWith modifier, sum for this roll is: " + sum + ".");
-            if (modifier < 0) {
-                createDieLabel("-", BorderType.NONE);
-            } else {
-                createDieLabel("+", BorderType.NONE);
+        rollNextDie();
+    }
+
+    private void rollNextDie() {
+        if (diceToRoll.isEmpty()) {
+            //rolled them all; finish up
+            if (numDiceRolling > 1) {
+                txtResults.appendText("\nSum for this roll is: " + rollSum + ".");
             }
-            createDieLabel(String.valueOf(Math.abs(modifier)), BorderType.NONE);
+            int modifier = validateModifier();
+            if (modifier != 0) {
+                rollSum += modifier;
+                txtResults.appendText("\nWith modifier, sum for this roll is: " + rollSum + ".");
+                if (modifier < 0) {
+                    createDieLabel("-", BorderType.NONE);
+                } else {
+                    createDieLabel("+", BorderType.NONE);
+                }
+                createDieLabel(String.valueOf(Math.abs(modifier)), BorderType.NONE);
+            }
+            if (numDiceRolling > 1) {
+                createDieLabel("=", BorderType.NONE);
+                createDieLabel(String.valueOf(rollSum), BorderType.DOUBLE);
+            }
+            return;
         }
-        if (countDice > 1) {
-            createDieLabel("=", BorderType.NONE);
-            createDieLabel(String.valueOf(sum), BorderType.DOUBLE);
+        //get the next Die to roll
+        Die d = diceToRoll.pop();
+        int numDie = Integer.parseInt(d.getName().substring(d.getName().length()-1));
+        int value = d.roll();
+        rollSum += value;
+        if (numDie > 1) {
+            //this isn't the first die we've rolled, so put a + in between
+            createDieLabel("+", BorderType.NONE);
+        }
+        txtResults.appendText("\nRolling " + d.getName() + "...");
+        //creating the die label will kick off the rolling animation.
+        //when the animation is over, the next die will be rolled.
+        createDieLabel(String.valueOf(value), BorderType.SINGLE);
+        if (!doAnimations) {
+            txtResults.appendText("\n...result is: " + value);
+            rollNextDie();
         }
     }
 
@@ -168,7 +199,60 @@ public class Controller {
         } else if(bt == BorderType.DOUBLE) {
             lbl.setBorder(new Border(new BorderStroke(null, BorderStrokeStyle.SOLID, null, BorderStroke.THICK)));
         }
-        gridDice.add(lbl);
+
+        if (bt == BorderType.SINGLE) {
+            if (doAnimations) {
+                //this is a die; let's draw a cube and animate it.
+                //when the animation is over, we'll roll the next die.
+                Box box = new Box();
+                box.setWidth(30.0);
+                box.setHeight(30.0);
+                box.setDepth(30.0);
+                diceTray.add(box);
+                animateNode(box, lbl, text);
+            } else {
+                diceTray.add(lbl);
+            }
+        } else {
+            //this is just a label (+ or - or = or modifier), so just slap it on the grid
+            diceTray.add(lbl);
+        }
+    }
+
+    private void animateNode(Node n, Label lbl, String value) {
+        //Creating a rotate transition
+        RotateTransition rotateTransition = new RotateTransition();
+        rotateTransition.setOnFinished(new EventHandler<ActionEvent>() {
+               @Override
+               public void handle(ActionEvent event) {
+                   //when the animation is over, display the results and roll the next die
+                   diceTray.remove(n);
+                   diceTray.add(lbl);
+                   txtResults.appendText("\n...result is: " + value);
+                   rollNextDie();
+               }
+           }
+        );
+
+        //Setting the duration for the transition
+        rotateTransition.setDuration(Duration.millis(1000));
+
+        //Setting the node for the transition
+        rotateTransition.setNode(n);
+
+        rotateTransition.setAxis(new Point3D(10.0, 10.0, 10.0));
+
+        //Spin it 360 degrees
+        rotateTransition.setByAngle(360);
+
+        //Spin it twice
+        rotateTransition.setCycleCount(2);
+
+        //Setting auto reverse value to false
+        rotateTransition.setAutoReverse(false);
+
+        //Playing the animation
+        rotateTransition.play();
     }
 
     private boolean isNumeric(String s) {
@@ -213,5 +297,10 @@ public class Controller {
     @FXML
     private void toggleConsole() {
         txtResults.setVisible(chkConsole.isSelected());
+    }
+
+    @FXML
+    private void toggleAnimations() {
+        doAnimations = chkAnimate.isSelected();
     }
 }

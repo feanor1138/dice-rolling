@@ -35,4 +35,13 @@ public class GridPaneFixedCols extends GridPane {
         }
         this.getChildren().add(node);
     }
+
+    public void remove(Node node) {
+        currentCol--;
+        if (currentCol < 0) {
+            currentCol = maxCols;
+            currentRow--;
+        }
+        this.getChildren().remove(node);
+    }
 }
