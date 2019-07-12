@@ -1,16 +1,14 @@
 package dice;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-
-import java.util.ArrayList;
+import javafx.scene.layout.*;
 
 public class Controller {
     @FXML
@@ -31,9 +29,15 @@ public class Controller {
     @FXML
     private TextField txtModifier;
 
+    @FXML
+    private GridPane gridDice;
+
     private int maxDice = 8;
     private int maxSides = 100;
     private int defaultVal = 5;
+    private int gridCol = 0;
+    private int gridRow = 0;
+    private int gridColMax = 10;
 
     public Controller() {
     }
@@ -42,6 +46,13 @@ public class Controller {
     private void initialize() {
         addNumberOptions(cboNumDice, maxDice, 0);
         addNumberOptions(cboSides1, maxSides, 5);
+        txtResults.textProperty().addListener(new ChangeListener<Object>() {
+            @Override
+            public void changed(ObservableValue<?> observable, Object oldValue,
+                            Object newValue) {
+                txtResults.setScrollTop(Double.MAX_VALUE);
+            }
+        });
     }
 
     private void addNumberOptions(ComboBox cbo, int max, int select) {
@@ -89,15 +100,21 @@ public class Controller {
                 Label lbl = new Label("Die #" + num + ":");
                 hBox.getChildren().add(lbl);
                 ComboBox cbo = new ComboBox();
-                addNumberOptions(cbo, maxSides, 5);
+                addNumberOptions(cbo, maxSides, defaultVal);
                 hBox.getChildren().add(cbo);
                 children.add(hBox);
             }
+        }
+        if (children.size() == 1) {
+            chkSame.setVisible(false);
+        } else {
+            chkSame.setVisible(true);
         }
     }
 
     @FXML
     private void rollDice() {
+        gridDice.getChildren().clear();
         txtResults.appendText("\n\nStarting a new roll! Let's go!");
         ObservableList<Node> boxes = gridSides.getChildren();
         int sum = 0;
@@ -114,6 +131,10 @@ public class Controller {
                     countDice++;
                     Die die = new Die(sides);
                     int value = die.roll();
+                    if (countDice > 1) {
+                        createDieLabel("+");
+                    }
+                    createDieLabel(String.valueOf(value));
                     sum += value;
 
                     //display result
@@ -128,6 +149,42 @@ public class Controller {
         if (modifier != 0) {
             sum += modifier;
             txtResults.appendText("\nWith modifier, sum for this roll is: " + sum + ".");
+            if (modifier < 0) {
+                createDieLabel("-");
+            } else {
+                createDieLabel("+");
+            }
+            createDieLabel(String.valueOf(Math.abs(modifier)));
+        }
+        if (countDice > 1) {
+            createDieLabel("=");
+            createDieLabel(String.valueOf(sum));
+        }
+    }
+
+    private void createDieLabel(String text) {
+        Label lbl = new Label(text);
+        GridPane.setConstraints(lbl, gridCol, gridRow);
+        gridCol++;
+        if (gridCol > gridColMax) {
+            gridCol = 0;
+            gridRow++;
+        }
+        lbl.setAlignment(Pos.CENTER);
+        lbl.setMinWidth(30);
+        lbl.setMinHeight(30);
+        if (isNumeric(text)) {
+            lbl.setBorder(new Border(new BorderStroke(null, BorderStrokeStyle.SOLID, null, null)));
+        }
+        gridDice.getChildren().add(lbl);
+    }
+
+    private boolean isNumeric(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch(Exception ex) {
+            return false;
         }
     }
 
@@ -160,5 +217,4 @@ public class Controller {
             return 0;
         }
     }
-
 }
