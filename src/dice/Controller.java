@@ -114,7 +114,11 @@ public class Controller {
 
     @FXML
     private void rollDice() {
+        //reset the dice tray
         gridDice.getChildren().clear();
+        gridCol = 0;
+        gridRow = 0;
+
         txtResults.appendText("\n\nStarting a new roll! Let's go!");
         ObservableList<Node> boxes = gridSides.getChildren();
         int sum = 0;
