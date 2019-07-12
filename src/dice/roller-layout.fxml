@@ -9,23 +9,24 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.TextField?>
+<?import dice.GridPaneFixedCols?>
 <VBox fx:controller="dice.Controller"
       xmlns:fx="http://javafx.com/fxml" alignment="center" spacing="10">
     <Label>How many dice would you like to roll today?</Label>
     <ComboBox fx:id="cboNumDice" onAction="#updateCombos" />
     <Label>How many sides should the dice have?</Label>
-    <GridPane fx:id="gridSides" hgap="10" vgap="10" alignment="center">
+    <GridPaneFixedCols fx:id="gridSides" hgap="10" vgap="10" alignment="center">
         <HBox fx:id="boxDie1" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0">
             <Label alignment="center">Die #1:</Label>
             <ComboBox fx:id="cboSides1" onAction="#updateSame"/>
         </HBox>
-    </GridPane>
+    </GridPaneFixedCols>
     <CheckBox fx:id="chkSame" onAction="#updateSame" visible="false">They should all be the same size as #1</CheckBox>
     <HBox alignment="center" spacing="10">
         <Label>Modifier (e.g. +1):</Label>
         <TextField fx:id="txtModifier" onAction="#validateModifier">0</TextField>
     </HBox>
     <Button fx:id="btnRoll" alignment="center" contentDisplay="center" onAction="#rollDice" text="Roll 'em" textAlignment="center" />
-    <GridPane fx:id="gridDice" hgap="10" vgap="10" alignment="center" />
+    <GridPaneFixedCols fx:id="gridDice" hgap="10" vgap="10" alignment="center" />
     <TextArea fx:id="txtResults">Welcome! Please select your dice above and click 'Roll 'em'!</TextArea>
 </VBox>

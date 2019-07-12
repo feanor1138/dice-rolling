@@ -15,7 +15,7 @@ public class Controller {
     private ComboBox cboNumDice;
 
     @FXML
-    private GridPane gridSides;
+    private GridPaneFixedCols gridSides;
 
     @FXML
     private ComboBox cboSides1;
@@ -30,22 +30,25 @@ public class Controller {
     private TextField txtModifier;
 
     @FXML
-    private GridPane gridDice;
+    private GridPaneFixedCols gridDice;
 
     private int maxDice = 8;
     private int maxSides = 100;
     private int defaultVal = 5;
-    private int gridCol = 0;
-    private int gridRow = 0;
-    private int gridColMax = 10;
 
     public Controller() {
     }
 
     @FXML
     private void initialize() {
+        //set up the grids
+        gridSides.setCurrentCol(1);
+        gridDice.setMaxCols(9);
+        gridSides.setMaxCols(4);
+        //set up the combo boxes
         addNumberOptions(cboNumDice, maxDice, 0);
         addNumberOptions(cboSides1, maxSides, 5);
+        //add listener to autoscroll to bottom of text area
         txtResults.textProperty().addListener(new ChangeListener<Object>() {
             @Override
             public void changed(ObservableValue<?> observable, Object oldValue,
@@ -56,6 +59,7 @@ public class Controller {
     }
 
     private void addNumberOptions(ComboBox cbo, int max, int select) {
+        //filling up the combo boxes
         ObservableList<String> options = FXCollections.observableArrayList();
         for (int i = 1; i <= max; i++) {
             options.add(String.valueOf(i));
@@ -66,6 +70,7 @@ public class Controller {
 
     @FXML
     private void updateCombos() {
+        //add or remove combo boxes based on number of dice selected
         int numDice = Integer.parseInt(cboNumDice.getSelectionModel().getSelectedItem().toString());
         ObservableList<Node> children = gridSides.getChildren();
         if (children.size() > numDice) {
@@ -75,36 +80,18 @@ public class Controller {
             //add hboxes
             while (children.size() < numDice) {
                 int num = children.size()+1;
-                int col = 0;
-                int row = 0;
-                switch (num) {
-                    case 2:
-                    case 3:
-                    case 4:
-                        row = 0;
-                        col = (num-1);
-                        break;
-                    case 5:
-                    case 6:
-                    case 7:
-                    case 8:
-                        row = 1;
-                        col = (num-5);
-                        break;
-                    default:
-                }
                 HBox hBox = new HBox();
                 hBox.setSpacing(10);
                 hBox.setAlignment(Pos.CENTER);
-                GridPane.setConstraints(hBox, col, row);
                 Label lbl = new Label("Die #" + num + ":");
                 hBox.getChildren().add(lbl);
                 ComboBox cbo = new ComboBox();
                 addNumberOptions(cbo, maxSides, defaultVal);
                 hBox.getChildren().add(cbo);
-                children.add(hBox);
+                gridSides.add(hBox);
             }
         }
+        //show the "match all die sizes to #1" checkbox if there's more than one die
         if (children.size() == 1) {
             chkSame.setVisible(false);
         } else {
@@ -115,9 +102,7 @@ public class Controller {
     @FXML
     private void rollDice() {
         //reset the dice tray
-        gridDice.getChildren().clear();
-        gridCol = 0;
-        gridRow = 0;
+        gridDice.clear();
 
         txtResults.appendText("\n\nStarting a new roll! Let's go!");
         ObservableList<Node> boxes = gridSides.getChildren();
@@ -168,19 +153,13 @@ public class Controller {
 
     private void createDieLabel(String text) {
         Label lbl = new Label(text);
-        GridPane.setConstraints(lbl, gridCol, gridRow);
-        gridCol++;
-        if (gridCol > gridColMax) {
-            gridCol = 0;
-            gridRow++;
-        }
         lbl.setAlignment(Pos.CENTER);
         lbl.setMinWidth(30);
         lbl.setMinHeight(30);
         if (isNumeric(text)) {
             lbl.setBorder(new Border(new BorderStroke(null, BorderStrokeStyle.SOLID, null, null)));
         }
-        gridDice.getChildren().add(lbl);
+        gridDice.add(lbl);
     }
 
     private boolean isNumeric(String s) {
