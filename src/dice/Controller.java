@@ -14,6 +14,10 @@ public class Controller {
     @FXML
     private ComboBox cboNumDice;
 
+    private enum BorderType {
+        NONE, SINGLE, DOUBLE;
+    }
+
     @FXML
     private GridPaneFixedCols gridSides;
 
@@ -31,6 +35,9 @@ public class Controller {
 
     @FXML
     private GridPaneFixedCols gridDice;
+
+    @FXML
+    private CheckBox chkConsole;
 
     private int maxDice = 8;
     private int maxSides = 100;
@@ -121,9 +128,9 @@ public class Controller {
                     Die die = new Die(sides);
                     int value = die.roll();
                     if (countDice > 1) {
-                        createDieLabel("+");
+                        createDieLabel("+", BorderType.NONE);
                     }
-                    createDieLabel(String.valueOf(value));
+                    createDieLabel(String.valueOf(value), BorderType.SINGLE);
                     sum += value;
 
                     //display result
@@ -139,25 +146,27 @@ public class Controller {
             sum += modifier;
             txtResults.appendText("\nWith modifier, sum for this roll is: " + sum + ".");
             if (modifier < 0) {
-                createDieLabel("-");
+                createDieLabel("-", BorderType.NONE);
             } else {
-                createDieLabel("+");
+                createDieLabel("+", BorderType.NONE);
             }
-            createDieLabel(String.valueOf(Math.abs(modifier)));
+            createDieLabel(String.valueOf(Math.abs(modifier)), BorderType.NONE);
         }
         if (countDice > 1) {
-            createDieLabel("=");
-            createDieLabel(String.valueOf(sum));
+            createDieLabel("=", BorderType.NONE);
+            createDieLabel(String.valueOf(sum), BorderType.DOUBLE);
         }
     }
 
-    private void createDieLabel(String text) {
+    private void createDieLabel(String text, BorderType bt) {
         Label lbl = new Label(text);
         lbl.setAlignment(Pos.CENTER);
         lbl.setMinWidth(30);
         lbl.setMinHeight(30);
-        if (isNumeric(text)) {
+        if (bt == BorderType.SINGLE) {
             lbl.setBorder(new Border(new BorderStroke(null, BorderStrokeStyle.SOLID, null, null)));
+        } else if(bt == BorderType.DOUBLE) {
+            lbl.setBorder(new Border(new BorderStroke(null, BorderStrokeStyle.SOLID, null, BorderStroke.THICK)));
         }
         gridDice.add(lbl);
     }
@@ -199,5 +208,10 @@ public class Controller {
         } catch(Exception ex) {
             return 0;
         }
+    }
+
+    @FXML
+    private void toggleConsole() {
+        txtResults.setVisible(chkConsole.isSelected());
     }
 }
