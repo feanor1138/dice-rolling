@@ -20,17 +20,17 @@ import java.util.LinkedList;
 
 public class Controller {
     @FXML
-    private ComboBox cboNumDice;
+    private ComboBox<String> cboNumDice;
 
     private enum BorderType {
-        NONE, SINGLE, DOUBLE;
+        NONE, SINGLE, DOUBLE
     }
 
     @FXML
     private GridPaneFixedCols gridSides;
 
     @FXML
-    private ComboBox cboSides1;
+    private ComboBox<String> cboSides1;
 
     @FXML
     private TextArea txtResults;
@@ -50,9 +50,9 @@ public class Controller {
     @FXML
     private CheckBox chkConsole;
 
-    private LinkedList<Die> diceToRoll = new LinkedList<Die>();
+    private LinkedList<Die> diceToRoll = new LinkedList<>();
 
-    private int maxDice = 8;
+    private static final int maxDice = 8;
     private int maxSides = 100;
     private int defaultVal = 5;
     private int rollSum = 0;
@@ -81,7 +81,7 @@ public class Controller {
         });
     }
 
-    private void addNumberOptions(ComboBox cbo, int max, int select) {
+    private void addNumberOptions(ComboBox<String> cbo, int max, int select) {
         //filling up the combo boxes
         ObservableList<String> options = FXCollections.observableArrayList();
         for (int i = 1; i <= max; i++) {
@@ -94,7 +94,7 @@ public class Controller {
     @FXML
     private void updateCombos() {
         //add or remove combo boxes based on number of dice selected
-        int numDice = Integer.parseInt(cboNumDice.getSelectionModel().getSelectedItem().toString());
+        int numDice = Integer.parseInt(cboNumDice.getSelectionModel().getSelectedItem());
         ObservableList<Node> children = gridSides.getChildren();
         if (children.size() > numDice) {
             //remove hboxes
@@ -108,7 +108,7 @@ public class Controller {
                 hBox.setAlignment(Pos.CENTER);
                 Label lbl = new Label("Die #" + num + ":");
                 hBox.getChildren().add(lbl);
-                ComboBox cbo = new ComboBox();
+                ComboBox<String> cbo = new ComboBox<>();
                 addNumberOptions(cbo, maxSides, defaultVal);
                 hBox.getChildren().add(cbo);
                 gridSides.add(hBox);
@@ -255,15 +255,6 @@ public class Controller {
         rotateTransition.play();
     }
 
-    private boolean isNumeric(String s) {
-        try {
-            Integer.parseInt(s);
-            return true;
-        } catch(Exception ex) {
-            return false;
-        }
-    }
-
     @FXML
     private void updateSame() {
         if (chkSame.isSelected()) {
@@ -287,8 +278,7 @@ public class Controller {
     @FXML
     private int validateModifier() {
         try {
-            int modifier = Integer.parseInt(txtModifier.getText());
-            return modifier;
+            return Integer.parseInt(txtModifier.getText());
         } catch(Exception ex) {
             return 0;
         }
