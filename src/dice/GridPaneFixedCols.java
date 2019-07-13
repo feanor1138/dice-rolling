@@ -12,21 +12,21 @@ public class GridPaneFixedCols extends GridPane {
         super();
     }
 
-    public void setMaxCols(int maxCols) {
+    void setMaxCols(int maxCols) {
         this.maxCols = maxCols;
     }
 
-    public void setCurrentCol(int currentCol) {
+    void setCurrentCol(int currentCol) {
         this.currentCol = currentCol;
     }
 
-    public void clear() {
+    void clear() {
         getChildren().clear();
         currentCol = 0;
         currentRow = 0;
     }
 
-    public void add(Node node) {
+    void add(Node node) {
         GridPane.setConstraints(node, currentCol, currentRow);
         currentCol++;
         if (currentCol > maxCols) {
@@ -36,7 +36,7 @@ public class GridPaneFixedCols extends GridPane {
         this.getChildren().add(node);
     }
 
-    public void remove(Node node) {
+    void remove(Node node) {
         currentCol--;
         if (currentCol < 0) {
             currentCol = maxCols;

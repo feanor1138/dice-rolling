@@ -12,19 +12,19 @@ public class Die {
         this.sides = sides;
     }
 
-    public int getSides() {
+    int getSides() {
         return sides;
     }
 
-    public int getValue() {
+    int getValue() {
         return value;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public int roll() {
+    int roll() {
         Random r = new Random();
         this.value = r.nextInt(sides) + 1;
         return this.value;
