@@ -14,6 +14,9 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Box;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Shape3D;
+import javafx.scene.shape.TriangleMesh;
 import javafx.util.Duration;
 
 import java.util.LinkedList;
@@ -158,15 +161,15 @@ public class Controller {
                 rollSum += modifier;
                 txtResults.appendText("\nWith modifier, sum for this roll is: " + rollSum + ".");
                 if (modifier < 0) {
-                    createDieLabel("-", BorderType.NONE);
+                    createDieLabel("-", BorderType.NONE, null);
                 } else {
-                    createDieLabel("+", BorderType.NONE);
+                    createDieLabel("+", BorderType.NONE, null);
                 }
-                createDieLabel(String.valueOf(Math.abs(modifier)), BorderType.NONE);
+                createDieLabel(String.valueOf(Math.abs(modifier)), BorderType.NONE, null);
             }
             if (numDiceRolling > 1) {
-                createDieLabel("=", BorderType.NONE);
-                createDieLabel(String.valueOf(rollSum), BorderType.DOUBLE);
+                createDieLabel("=", BorderType.NONE, null);
+                createDieLabel(String.valueOf(rollSum), BorderType.DOUBLE, null);
             }
             return;
         }
@@ -177,19 +180,19 @@ public class Controller {
         rollSum += value;
         if (numDie > 1) {
             //this isn't the first die we've rolled, so put a + in between
-            createDieLabel("+", BorderType.NONE);
+            createDieLabel("+", BorderType.NONE, null);
         }
         txtResults.appendText("\nRolling " + d.getName() + "...");
         //creating the die label will kick off the rolling animation.
         //when the animation is over, the next die will be rolled.
-        createDieLabel(String.valueOf(value), BorderType.SINGLE);
+        createDieLabel(String.valueOf(value), BorderType.SINGLE, d);
         if (!doAnimations) {
             txtResults.appendText("\n...result is: " + value);
             rollNextDie();
         }
     }
 
-    private void createDieLabel(String text, BorderType bt) {
+    private void createDieLabel(String text, BorderType bt, Die d) {
         Label lbl = new Label(text);
         lbl.setAlignment(Pos.CENTER);
         lbl.setMinWidth(30);
@@ -200,16 +203,21 @@ public class Controller {
             lbl.setBorder(new Border(new BorderStroke(null, BorderStrokeStyle.SOLID, null, BorderStroke.THICK)));
         }
 
-        if (bt == BorderType.SINGLE) {
+        if (d != null) {
             if (doAnimations) {
-                //this is a die; let's draw a cube and animate it.
+                //this is a die; let's draw a 3d shape and animate it.
                 //when the animation is over, we'll roll the next die.
-                Box box = new Box();
-                box.setWidth(30.0);
-                box.setHeight(30.0);
-                box.setDepth(30.0);
-                diceTray.add(box);
-                animateNode(box, lbl, text);
+                Shape3D shape;
+                if (d.getSides() == 4) {
+                    shape = createMeshView();
+                } else {
+                    shape = new Box();
+                    ((Box)shape).setWidth(30.0);
+                    ((Box)shape).setHeight(30.0);
+                    ((Box)shape).setDepth(30.0);
+                }
+                diceTray.add(shape);
+                animateNode(shape, lbl, text);
             } else {
                 diceTray.add(lbl);
             }
@@ -217,6 +225,38 @@ public class Controller {
             //this is just a label (+ or - or = or modifier), so just slap it on the grid
             diceTray.add(lbl);
         }
+    }
+
+    private MeshView createMeshView()
+    {
+        float[] points = {
+            0, 0, 0,
+            15, 30, 15,
+            30, 0, 0,
+            15, 0, 30
+        };
+
+        float[] texCoords = {
+            0.5f, 0.5f,
+            1.0f, 0.0f,
+            1.5f, 0.5f,
+            1.0f, 1.0f
+        };
+
+        int[] faces = {
+            0, 0, 2, 2, 1, 1,
+            0, 0, 3, 3, 2, 2,
+            1, 1, 2, 2, 3, 3,
+            0, 0, 1, 1, 3, 3
+        };
+
+        // Create a TriangleMesh
+        TriangleMesh mesh = new TriangleMesh();
+        mesh.getPoints().addAll(points);
+        mesh.getTexCoords().addAll(texCoords);
+        mesh.getFaces().addAll(faces);
+
+        return new MeshView(mesh);
     }
 
     private void animateNode(Node n, Label lbl, String value) {

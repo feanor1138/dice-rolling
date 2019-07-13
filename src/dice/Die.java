@@ -12,6 +12,14 @@ public class Die {
         this.sides = sides;
     }
 
+    public int getSides() {
+        return sides;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
     public String getName() {
         return name;
     }
