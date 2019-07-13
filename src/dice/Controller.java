@@ -53,7 +53,7 @@ public class Controller {
 
     private LinkedList<Die> diceToRoll = new LinkedList<>();
 
-    private static final int maxDice = 8;
+    private static final int maxDice = 10;
     private int maxSides = 100;
     private int defaultVal = 5;
     private int rollSum = 0;
@@ -168,7 +168,8 @@ public class Controller {
         }
         //get the next Die to roll
         Die d = diceToRoll.pop();
-        int numDie = Integer.parseInt(d.getName().substring(d.getName().length()-1));
+        String name = d.getName();
+        int numDie = Integer.parseInt(name.substring(name.indexOf('#')+1));
         int value = d.roll();
         rollSum += value;
         if (numDie > 1) {
@@ -188,11 +189,13 @@ public class Controller {
     private void createDieLabel(String text, BorderType bt, Die d) {
         Label lbl = new Label(text);
         lbl.setAlignment(Pos.CENTER);
-        lbl.setMinWidth(30);
-        lbl.setMinHeight(30);
+        lbl.setMinWidth(35);
+        lbl.setMinHeight(35);
         if (bt == BorderType.SINGLE) {
             lbl.setBorder(new Border(new BorderStroke(null, BorderStrokeStyle.SOLID, null, null)));
-        } else if(bt == BorderType.DOUBLE) {
+        } else if (bt == BorderType.DOUBLE) {
+            lbl.setMinWidth(35);
+            lbl.setMinHeight(35);
             lbl.setBorder(new Border(new BorderStroke(null, BorderStrokeStyle.SOLID, null, BorderStroke.THICK)));
         }
 
