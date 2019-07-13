@@ -1,12 +1,10 @@
 package dice;
 
 import javafx.animation.RotateTransition;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Point3D;
 import javafx.geometry.Pos;
@@ -75,13 +73,8 @@ public class Controller {
         addNumberOptions(cboNumDice, maxDice, 0);
         addNumberOptions(cboSides1, maxSides, 5);
         //add listener to autoscroll to bottom of text area
-        txtResults.textProperty().addListener(new ChangeListener<Object>() {
-            @Override
-            public void changed(ObservableValue<?> observable, Object oldValue,
-                            Object newValue) {
-                txtResults.setScrollTop(Double.MAX_VALUE);
-            }
-        });
+        txtResults.textProperty().addListener((ObservableValue<?> observable, Object oldValue, Object newValue) ->
+                txtResults.setScrollTop(Double.MAX_VALUE));
     }
 
     private void addNumberOptions(ComboBox<String> cbo, int max, int select) {
@@ -262,16 +255,13 @@ public class Controller {
     private void animateNode(Node n, Label lbl, String value) {
         //Creating a rotate transition
         RotateTransition rotateTransition = new RotateTransition();
-        rotateTransition.setOnFinished(new EventHandler<ActionEvent>() {
-               @Override
-               public void handle(ActionEvent event) {
-                   //when the animation is over, display the results and roll the next die
-                   diceTray.remove(n);
-                   diceTray.add(lbl);
-                   txtResults.appendText("\n...result is: " + value);
-                   rollNextDie();
-               }
-           }
+        rotateTransition.setOnFinished((ActionEvent event) -> {
+                //when the animation is over, display the results and roll the next die
+                diceTray.remove(n);
+                diceTray.add(lbl);
+                txtResults.appendText("\n...result is: " + value);
+                rollNextDie();
+            }
         );
 
         //Setting the duration for the transition
